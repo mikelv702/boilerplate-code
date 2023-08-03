@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp # Deployment Name - Should match the application or something close
+  namespace: namespace # Namespace - Leave blank for default namespace
+  labels:
+    app: myapp # Application Name - Will be used for SELECTORS
+spec:
+  selector:
+    matchLabels:
+      app: myapp # Name of your application <- Selectors!
+  replicas: 1 # How many copies do you want
+  template:
+    metadata:
+      labels:
+        app: myapp # Name of the application
+    spec:
+      containers:
+      # What Containers do you want to run?
+      - name: python # ContainerName
+        image: python:latest # Container Image
+        # image: <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/CONTAINERNAME
+        #  imagePullPolicy: Always
+        # Maybe limit the container? MAYBE?
+        # resources:
+        #   limits:
+        #     memory: 512Mi
+        #     cpu: "1"
+        #   requests:
+        #     memory: 256Mi
+        #     cpu: "0.2"
+        # env:
+        # - name: ENV_1
+        #   value: ENV_VALUE_1
+        ports:
+        # Ports are the ports that your application uses.
+        - containerPort: 8080 # The port that your application uses
+        volumeMounts:
+        # VolumeMounts are the volumes that your application uses.
+        - mountPath: /var/www/html # The path that your application uses
+          name: vol0 # Name of the volume
+      volumes:
+      # Volumes are the persistent storage that your application uses.
+      - name: vol0 # Name of the volume
+        persistentVolumeClaim:
+          claimName: pvc0 # Name of the persistent volume claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  servicename # Name of the Service APP NAME?
+  namespace: namespace # MATCH THE DEPLOYMENT
+spec:
+  selector:
+    app:  appname # Should match the rest!
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress # Name of the ingress object
+  namespace: namespace # Name of the namespace
+spec:
+  rules:
+  - host: "your-hostname.com"  # Your hostname
+    http:
+      paths:
+      # Path-based routing settings:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: your-service-name  # The name of the service
+            port:
+              number: 80  # Service Portnumber

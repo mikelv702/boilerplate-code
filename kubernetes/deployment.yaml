@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp # Deployment Name - Should match the application or something close
+  namespace: namespace # Namespace - Leave blank for default namespace
+  labels:
+    app: myapp # Application Name - Will be used for SELECTORS
+spec:
+  selector:
+    matchLabels:
+      app: myapp # Name of your application <- Selectors!
+  replicas: 1 # How many copies do you want
+  template:
+    metadata:
+      labels:
+        app: myapp # Name of the application
+    spec:
+      containers:
+      # What Containers do you want to run?
+      - name: python # ContainerName
+        image: python:latest # Container Image
+        # image: <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/CONTAINERNAME
+        #  imagePullPolicy: Always
+        # Maybe limit the container? MAYBE?
+        # resources:
+        #   limits:
+        #     memory: 512Mi
+        #     cpu: "1"
+        #   requests:
+        #     memory: 256Mi
+        #     cpu: "0.2"
+        ports:
+        # Ports are the ports that your application uses.
+        - containerPort: 8080 # The port that your application uses
+        volumeMounts:
+        # VolumeMounts are the volumes that your application uses.
+        - mountPath: /var/www/html # The path that your application uses
+          name: vol0 # Name of the volume
+      volumes:
+      # Volumes are the persistent storage that your application uses.
+      - name: vol0 # Name of the volume
+        persistentVolumeClaim:
+          claimName: pvc0 # Name of the persistent volume claim
